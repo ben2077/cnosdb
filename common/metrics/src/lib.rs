@@ -15,7 +15,7 @@ pub static REGISTRY: Lazy<Registry> = Lazy::new(Registry::new);
 pub static KV_READ_SUCCESS: Lazy<IntCounter> = Lazy::new( || {
     IntCounter::with_opts(
         Opts::new(
-            "query_requests",
+            "kv_read_success_total",
             "Number of read requests",
         ).namespace(SERVER_NAMESPACE)
             .subsystem(TSKV_SUBSYSTEM),
@@ -79,14 +79,19 @@ pub static KV_WRITE_LATENCY: Lazy<HistogramVec> = Lazy::new( || {
 fn init_tskv_recorder(){
     REGISTRY.register(Box::new(KV_READ_LATENCY.clone()))
         .expect("tskv metrics collector cannot be registered");
+
     REGISTRY.register(Box::new(KV_WRITE_LATENCY.clone()))
         .expect("tskv metrics collector cannot be registered");
+
     REGISTRY.register(Box::new(KV_READ_SUCCESS.clone()))
         .expect("tskv metrics collector cannot be registered");
+
     REGISTRY.register(Box::new(KV_READ_FAILED.clone()))
         .expect("tskv metrics collector cannot be registered");
+
     REGISTRY.register(Box::new(KV_WRITE_SUCCESS.clone()))
         .expect("tskv metrics collector cannot be registered");
+
     REGISTRY.register(Box::new(KV_WRITE_FAILED.clone()))
         .expect("tskv metrics collector cannot be registered");
 }
@@ -97,4 +102,20 @@ pub fn sample_tskv_metrics_read_latency(status: String, delta: f64) {
 
 pub fn sample_tskv_metrics_write_latency(status: String, delta: f64) {
     KV_READ_LATENCY.with_label_values(&[&status]).observe(delta)
+}
+
+pub fn incr_tskv_read_success_operation() {
+    KV_READ_SUCCESS.inc()
+}
+
+pub fn incr_tskv_read_failed_operation(){
+    KV_READ_FAILED.inc()
+}
+
+pub fn incr_tskv_write_failed_operation(){
+    KV_WRITE_FAILED.inc()
+}
+
+pub fn incr_tskv_write_success_operation(){
+    KV_WRITE_SUCCESS.inc();
 }
